@@ -26,5 +26,3 @@ RUN mkdir -p /opt/triton && \
 ENV PATH="/opt/triton/bin:$PATH"
 ENV LD_LIBRARY_PATH="/opt/triton/lib:$LD_LIBRARY_PATH"
 ENTRYPOINT ["tritonserver", "--backend-directory=/opt/triton/backends"]
-
-tritonserver --backend-directory=/opt/triton/backends --min-supported-compute-capability=5.3 --model-repository=/opt/triton/models --backend-config=tensorflow,version=2
