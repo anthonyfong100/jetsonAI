@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: triton
+spec:
+  selector:
+  template:
+    spec:
+      containers:
+      - name: triton-server
+        image: anthonyfong/triton
+        args: ["--min-supported-compute-capability=5.3", "--model-repository=/opt/triton/models", "--backend-config=tensorflow,version=2"]
+        volumeMounts:
+        # - name: varlog
+        #   mountPath: /var/log
+        # - name: varlibdockercontainers
+        #   mountPath: /var/lib/docker/containers
+        #   readOnly: true
+        - mountPath: /dev/shm
+          name: dshm
+        ports:
+          - containerPort: 8000
+            name: http
+          - containerPort: 8001
+            name: grpc
+          - containerPort: 8002
+            name: metrics
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
