@@ -4,4 +4,4 @@ download_models:
 
 .PHONY: clean
 clean:
-	rm -rf models/* tmp/
+	rm -rf models/* tmp/ .venv
