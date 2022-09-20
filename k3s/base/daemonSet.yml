@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
       - name: triton-server
-        image: anthonyfong/triton
+        image: anthonyfong/jetson-triton
         args: ["--min-supported-compute-capability=5.3", "--model-repository=/opt/triton/models", "--backend-config=tensorflow,version=2"]
         volumeMounts:
         # - name: varlog
