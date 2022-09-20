@@ -11,6 +11,8 @@ spec:
         image: anthonyfong/jetson-triton
         args: ["--min-supported-compute-capability=5.3", "--model-repository=/opt/triton/models", "--backend-config=tensorflow,version=2"]
         volumeMounts:
+        - mountPath: /opt/triton/models
+          name: models
         # - name: varlog
         #   mountPath: /var/log
         # - name: varlibdockercontainers
@@ -29,3 +31,7 @@ spec:
       - name: dshm
         emptyDir:
           medium: Memory
+      - name: models
+        hostPath:
+          path: /home/kuoxin/Desktop/jetsonAI/models
+          type: Directory

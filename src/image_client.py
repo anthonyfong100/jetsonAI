@@ -295,7 +295,7 @@ if __name__ == '__main__':
     # Make sure the model matches our requirements, and get some
     # properties of the model that we need for preprocessing
     try:
-        print(f"getting model meta data")
+        # print(f"getting model meta data")
         model_metadata = triton_client.get_model_metadata(
             model_name=FLAGS.model_name, model_version=FLAGS.model_version)
     except InferenceServerException as e:
