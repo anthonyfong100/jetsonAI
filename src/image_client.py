@@ -299,6 +299,7 @@ if __name__ == '__main__':
         # print(f"getting model meta data")
         model_metadata = triton_client.get_model_metadata(
             model_name=FLAGS.model_name, model_version=FLAGS.model_version)
+        print(model_metadata.keys())
     except InferenceServerException as e:
         print("failed to retrieve the metadata: " + str(e))
         sys.exit(1)
@@ -307,6 +308,7 @@ if __name__ == '__main__':
         print(f"getting model config")
         model_config = triton_client.get_model_config(
             model_name=FLAGS.model_name, model_version=FLAGS.model_version)
+        print(model_config.keys())
     except InferenceServerException as e:
         print("failed to retrieve the config: " + str(e))
         sys.exit(1)
