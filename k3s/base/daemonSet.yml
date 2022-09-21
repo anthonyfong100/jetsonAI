@@ -7,31 +7,26 @@ spec:
   template:
     spec:
       containers:
-      - name: triton-server
-        image: anthonyfong/jetson-triton
-        args: ["--min-supported-compute-capability=5.3", "--model-repository=/opt/triton/models", "--backend-config=tensorflow,version=2"]
-        volumeMounts:
-        - mountPath: /opt/triton/models
-          name: models
-        # - name: varlog
-        #   mountPath: /var/log
-        # - name: varlibdockercontainers
-        #   mountPath: /var/lib/docker/containers
-        #   readOnly: true
-        - mountPath: /dev/shm
-          name: dshm
-        ports:
-          - containerPort: 8000
-            name: http
-          - containerPort: 8001
-            name: grpc
-          - containerPort: 8002
-            name: metrics
+        - name: triton-server
+          image: anthonyfong/jetson-triton
+          imagePullPolicy: Always
+          args:
+            [
+              "--min-supported-compute-capability=5.3",
+              "--model-repository=/opt/triton/models",
+              "--backend-config=tensorflow,version=2",
+            ]
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+          ports:
+            - containerPort: 8000
+              name: http
+            - containerPort: 8001
+              name: grpc
+            - containerPort: 8002
+              name: metrics
       volumes:
-      - name: dshm
-        emptyDir:
-          medium: Memory
-      - name: models
-        hostPath:
-          path: /home/kuoxin/Desktop/jetsonAI/models
-          type: Directory
+        - name: dshm
+          emptyDir:
+            medium: Memory

@@ -27,12 +27,12 @@ ENV PATH="/opt/triton/bin:$PATH"
 ENV LD_LIBRARY_PATH="/opt/triton/lib:$LD_LIBRARY_PATH"
 
 # download inception model
-RUN mkdir -p /tmp/models
 RUN mkdir -p /opt/triton/models
-# WORKDIR /tmp/models
-# COPY . .
-# RUN scripts/download_inception.sh
-# RUN mv models /opt/triton/models
+WORKDIR /tmp/models
+COPY scripts scripts
+RUN scripts/download_densenet.sh
+RUN scripts/download_simple.sh
+RUN mv models /opt/triton
 
 WORKDIR /opt/triton
 ENTRYPOINT ["tritonserver", "--backend-directory=/opt/triton/backends"]

@@ -41,6 +41,7 @@ def parse_model(model_metadata, model_config):
     this client)
     """
     if len(model_metadata.inputs) != 1:
+        print("exception raised")
         raise Exception("expecting 1 input, got {}".format(
             len(model_metadata.inputs)))
     if len(model_metadata.outputs) != 1:
