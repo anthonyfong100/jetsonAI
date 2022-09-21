@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+   name: kube-prometheus-stack-tritonmetrics
+spec:
+   selector:
+      matchLabels:
+         app: triton
+   namespaceSelector:
+      matchNames:
+         - default
+   podMetricsEndpoints:
+      - port: metrics
+        interval: 10s
+        path: /metrics

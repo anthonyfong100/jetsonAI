@@ -6,13 +6,21 @@ download_models:
 clean:
 	rm -rf models/* tmp/ .venv
 
+.PHONY: monitoring
+monitoring:
+	kubectl apply -k k3s/monitoring
+
 .PHONY: dev
-dev:
-	kubectl apply -k k3s/base
+dev: monitoring
+	kubectl apply -k k3s/triton
+
+.PHONY: monitoring-stop
+monitoring-stop:
+	kubectl delete -k k3s/monitoring
 
 .PHONY: dev-stop
 dev-stop:
-	kubectl delete -k k3s/base
+	kubectl delete -k k3s/triton
 
 .PHONY: test
 test:
