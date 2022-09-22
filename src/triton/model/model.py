@@ -32,7 +32,7 @@ class ModelMetadata(BaseModel):
         return field
 
     @validator("outputs")
-    def check_fp_32(cls, outputs: List[ModelBlock]):
+    def check_fp_32(cls, outputs: List[ModelMetaDataBlock]):
         for output in outputs:
             assert (
                 output.datatype == FP32_CONSTANT
