@@ -217,7 +217,7 @@ def convert_http_metadata_config(_metadata, _config):
     return _model_metadata, _model_config
 
 
-if __name__ == "__main__":
+def setup_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-v",
@@ -304,6 +304,11 @@ if __name__ == "__main__":
         default=None,
         help="Input image / Input folder.",
     )
+    return parser
+
+
+if __name__ == "__main__":
+    parser = setup_parser()
     FLAGS = parser.parse_args()
     if FLAGS.streaming and FLAGS.protocol.lower() != "grpc":
         raise Exception("Streaming is only allowed with gRPC protocol")
