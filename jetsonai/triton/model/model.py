@@ -1,14 +1,14 @@
 from typing import List, Any
 from pydantic import BaseModel, validator
-from src.triton.model.block import ModelMetaDataBlock, ModelConfigBlock
+from jetsonai.triton.model.block import ModelMetaDataBlock, ModelConfigBlock
 
 FP32_CONSTANT = "FP32"
 
 
 class ModelConfig(BaseModel):
     name: str
-    platform: int
-    backend: int
+    platform: str
+    backend: str
     max_batch_size: int
     input: List[ModelConfigBlock]
     output: List[ModelConfigBlock]

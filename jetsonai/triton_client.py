@@ -1,6 +1,7 @@
+from jetsonai.triton.model.model import ModelConfig, ModelMetadata
 class TritonClientApi:
     def __init__(self, api_client, model_name: str, model_version: str) -> None:
-        self.api_client = api_client
+        self.triton_client = api_client
         self.model_metadata = self.__get_model_metadata(model_name, model_version)
 
     def __get_model_metadata(self, model_name: str, model_version: str):
@@ -9,24 +10,20 @@ class TritonClientApi:
         requirements for an image classification network (as expected by
         this client)
         """
-        model_metadata = self.triton_client.get_model_metadata(
+        model_metadata:ModelMetadata = ModelMetadata.parse_obj(self.triton_client.get_model_metadata(
             model_name=model_name, model_version=model_version
-        )
-        model_config = self.triton_client.get_model_config(
+        ))
+        print(self.triton_client.get_model_config(
             model_name=model_name, model_version=model_version
-        )
+        ))
+
+        model_config:ModelConfig = ModelConfig.parse_obj(self.triton_client.get_model_config(
+            model_name=model_name, model_version=model_version
+        ))
 
         input_metadata = model_metadata.inputs[0]
         input_config = model_config.input[0]
         output_metadata = model_metadata.outputs[0]
-
-        if output_metadata.datatype != "FP32":
-            raise Exception(
-                "expecting output datatype to be FP32, model '"
-                + model_metadata.name
-                + "' output type is "
-                + output_metadata.datatype
-            )
 
         # Output is expected to be a vector. But allow any number of
         # dimensions as long as all but 1 is size 1 (e.g. { 10 }, { 1, 10
