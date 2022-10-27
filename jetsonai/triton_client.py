@@ -1,4 +1,6 @@
 from jetsonai.triton.model.model import ModelConfig, ModelMetadata
+
+
 class TritonClientApi:
     def __init__(self, api_client, model_name: str, model_version: str) -> None:
         self.triton_client = api_client
@@ -10,17 +12,18 @@ class TritonClientApi:
         requirements for an image classification network (as expected by
         this client)
         """
-        model_metadata:ModelMetadata = ModelMetadata.parse_obj(self.triton_client.get_model_metadata(
+        model_metadata_dict = self.triton_client.get_model_metadata(
             model_name=model_name, model_version=model_version
-        ))
-        print(self.triton_client.get_model_config(
+        )
+        model_config_dict = self.triton_client.get_model_config(
             model_name=model_name, model_version=model_version
-        ))
+        )
+        model_config_dict["input_metadata_shape"] = model_metadata_dict["inputs"][0]["shape"]
+        model_metadata_dict["max_batch_size"] = model_config_dict["max_batch_size"]
+        model_config:ModelConfig = ModelConfig.parse_obj(model_config_dict)
+        model_metadata:ModelMetadata = ModelMetadata.parse_obj(model_metadata_dict)
 
-        model_config:ModelConfig = ModelConfig.parse_obj(self.triton_client.get_model_config(
-            model_name=model_name, model_version=model_version
-        ))
-
+        print(model_config.input_config)
         input_metadata = model_metadata.inputs[0]
         input_config = model_config.input[0]
         output_metadata = model_metadata.outputs[0]
@@ -49,39 +52,10 @@ class TritonClientApi:
                     expected_input_dims, model_metadata.name, len(input_metadata.shape)
                 )
             )
-
-        if type(input_config.format) == str:
-            FORMAT_ENUM_TO_INT = dict(mc.ModelInput.Format.items())
-            input_config.format = FORMAT_ENUM_TO_INT[input_config.format]
-
-        if (input_config.format != mc.ModelInput.FORMAT_NCHW) and (
-            input_config.format != mc.ModelInput.FORMAT_NHWC
-        ):
-            raise Exception(
-                "unexpected input format "
-                + mc.ModelInput.Format.Name(input_config.format)
-                + ", expecting "
-                + mc.ModelInput.Format.Name(mc.ModelInput.FORMAT_NCHW)
-                + " or "
-                + mc.ModelInput.Format.Name(mc.ModelInput.FORMAT_NHWC)
-            )
-
-        if input_config.format == mc.ModelInput.FORMAT_NHWC:
-            h = input_metadata.shape[1 if input_batch_dim else 0]
-            w = input_metadata.shape[2 if input_batch_dim else 1]
-            c = input_metadata.shape[3 if input_batch_dim else 2]
-        else:
-            c = input_metadata.shape[1 if input_batch_dim else 0]
-            h = input_metadata.shape[2 if input_batch_dim else 1]
-            w = input_metadata.shape[3 if input_batch_dim else 2]
-
         return (
             model_config.max_batch_size,
             input_metadata.name,
             output_metadata.name,
-            c,
-            h,
-            w,
             input_config.format,
             input_metadata.datatype,
         )
