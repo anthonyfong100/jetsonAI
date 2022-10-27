@@ -89,6 +89,24 @@ class ModelMetadata(BaseModel):
         return outputs
 
 
+    # Output is expected to be a vector. But allow any number of
+    # dimensions as long as all but 1 is size 1 (e.g. { 10 }, { 1, 10
+    # }, { 10, 1, 1 } are all ok). Ignore the batch dimension if there
+    # is one.
+    @validator("outputs")
+    def check_output_dims(cls, outputs: List[ModelMetaDataBlock], values):
+        output_metadata = outputs[0]
+        start_dim = 1 if values["max_batch_size"] > 0 else 0 # skip the batch size checks
+        non_one_counts = 0
+        for dim in output_metadata.shape[start_dim:]:
+            if dim > 1:
+                non_one_counts += 1
+        
+        assert non_one_counts <= 1, "Expecting model output to be a vector with only one channel wiht non-one value"
+
+        return outputs
+
+
     @validator("inputs")
     def check_input_metadata_dims(cls, inputs, values):
         input_metadata = inputs[0]

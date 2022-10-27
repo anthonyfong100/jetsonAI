@@ -11,7 +11,7 @@ monitoring:
 	kubectl apply -k k3s/monitoring
 
 .PHONY: dev
-dev: monitoring
+dev:
 	kubectl apply -k k3s/triton
 
 .PHONY: monitoring-stop
@@ -24,7 +24,7 @@ dev-stop:
 
 .PHONY: test
 test:
-	TF_FORCE_GPU_ALLOW_GROWTH=true OPENBLAS_CORETYPE=ARMV8 python3 src/image_client.py -u 172.20.238.9:30800 -m densenet_onnx -s INCEPTION -c 3 tests/data/car.jpeg
+	TF_FORCE_GPU_ALLOW_GROWTH=true OPENBLAS_CORETYPE=ARMV8 python3 jetsonai/image_client.py -u 172.20.238.9:30800 -m densenet_onnx -s INCEPTION -c 3 tests/data/car.jpeg
 
 .PHONY: client
 client:

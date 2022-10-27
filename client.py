@@ -2,7 +2,8 @@ import argparse
 import tritonclient.http as httpclient
 
 from jetsonai.triton_client import TritonClientApi
-
+from jetsonai.loaders import LocalFileLoader
+from jetsonai.triton.model.enums import ClientType
 def setup_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -101,5 +102,7 @@ if __name__ == "__main__":
     triton_client = httpclient.InferenceServerClient(
                 url=FLAGS.url, verbose=FLAGS.verbose, concurrency=concurrency
             )
-    triton_api = TritonClientApi(triton_client,FLAGS.model_name, FLAGS.model_version)
-    print(triton_api)
+    triton_api = TritonClientApi(triton_client,ClientType.http,FLAGS.model_name, FLAGS.model_version, FLAGS.scaling)
+    image_provider = LocalFileLoader(FLAGS.image_filename)
+    for image in image_provider.iter():
+        triton_api.infer(image)

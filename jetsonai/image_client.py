@@ -40,7 +40,6 @@ def parse_model(model_metadata, model_config):
     this client)
     """
     if len(model_metadata.inputs) != 1:
-        print("exception raised")
         raise Exception("expecting 1 input, got {}".format(len(model_metadata.inputs)))
     if len(model_metadata.outputs) != 1:
         raise Exception(
@@ -55,6 +54,7 @@ def parse_model(model_metadata, model_config):
         )
 
     input_metadata = model_metadata.inputs[0]
+    print("input data is",input_metadata)
     input_config = model_config.input[0]
     output_metadata = model_metadata.outputs[0]
 
@@ -116,6 +116,7 @@ def parse_model(model_metadata, model_config):
         h = input_metadata.shape[2 if input_batch_dim else 1]
         w = input_metadata.shape[3 if input_batch_dim else 2]
 
+    print("ans",input_metadata.datatype )
     return (
         model_config.max_batch_size,
         input_metadata.name,
@@ -144,9 +145,11 @@ def preprocess(img, format, dtype, c, h, w, scaling, protocol):
     resized = np.array(resized_img)
     if resized.ndim == 2:
         resized = resized[:, :, np.newaxis]
-
+    print("dtype is:",dtype)
     npdtype = triton_to_np_dtype(dtype)
+    print("npdtype is:",npdtype)
     typed = resized.astype(npdtype)
+    print("np type is:",typed.dtype)
 
     if scaling == "INCEPTION":
         scaled = (typed / 127.5) - 1
@@ -203,15 +206,19 @@ def requestGenerator(batched_image_data, input_name, output_name, dtype, FLAGS):
 
     # Set the input data
     inputs = [client.InferInput(input_name, batched_image_data.shape, dtype)]
+    print(batched_image_data.dtype)
     inputs[0].set_data_from_numpy(batched_image_data)
 
+    # print("RESPONSE GENERATOR:",output_name)
     outputs = [client.InferRequestedOutput(output_name, class_count=FLAGS.classes)]
 
     yield inputs, outputs, FLAGS.model_name, FLAGS.model_version
 
 
 def convert_http_metadata_config(_metadata, _config):
+    print("before converting",_metadata)
     _model_metadata = AttrDict(_metadata)
+    print("after converting",_metadata)
     _model_config = AttrDict(_config)
 
     return _model_metadata, _model_config
@@ -337,7 +344,7 @@ if __name__ == "__main__":
         model_metadata = triton_client.get_model_metadata(
             model_name=FLAGS.model_name, model_version=FLAGS.model_version
         )
-        print(model_metadata.keys())
+        print(model_metadata["inputs"])
     except InferenceServerException as e:
         print("failed to retrieve the metadata: " + str(e))
         sys.exit(1)
@@ -463,6 +470,7 @@ if __name__ == "__main__":
                             )
                         )
                 else:
+                    print(type(inputs[0]))
                     responses.append(
                         triton_client.infer(
                             FLAGS.model_name,
