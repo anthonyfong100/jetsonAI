@@ -105,4 +105,5 @@ if __name__ == "__main__":
     triton_api = TritonClientApi(triton_client,ClientType.http,FLAGS.model_name, FLAGS.model_version, FLAGS.scaling)
     image_provider = LocalFileLoader(FLAGS.image_filename)
     for image in image_provider.iter():
-        triton_api.infer(image)
+        resp = triton_api.infer(image)
+        print(resp)

@@ -7,11 +7,12 @@ from jetsonai.preprocessor import preprocess
 
 
 class TritonClientApi:
-    def __init__(self, api_client,client_type:ClientType, model_name: str, model_version: str, normalize_schema:str) -> None:
+    def __init__(self, api_client,client_type:ClientType, model_name: str, model_version: str, normalize_schema:str,classes:int) -> None:
         self.triton_client = api_client
         self.client_type = client_type
         self.model_config, self.model_metadata = self.__get_model_metadata(model_name, model_version)
         self.normalize_schema = normalize_schema
+        self.classes = classes
 
     def __get_model_metadata(self, model_name: str, model_version: str)-> Tuple[ModelConfig, ModelMetadata]:
         """
@@ -34,8 +35,11 @@ class TritonClientApi:
 
     def infer(self,image:Image):
         metadata_data_type = self.model_metadata.inputs[0].datatype
+        output_name = self.model_metadata.outputs[0].name
         img_preprocessed = preprocess(image, self.model_config.input_config,self.normalize_schema,metadata_data_type)
         client_module = get_client_module(self.client_type)
         triton_input = [client_module.InferInput(self.model_config.input_config.name, img_preprocessed.shape,metadata_data_type)]
         triton_input[0].set_data_from_numpy(img_preprocessed)
+        outputs = [client_module.InferRequestedOutput(output_name, class_count=FLAGS.classes)]
+
         return self.triton_client.infer(self.model_config.name,triton_input)
