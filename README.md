@@ -1,7 +1,9 @@
 # Jetson Cluster hosting Triton server on K3s
+
 The documentation of this repo builds upon this [blog post](https://thenewstack.io/tutorial-edge-ai-with-triton-inference-server-kubernetes-jetson-mate/)
 
 ### Set up Jetson with Python
+
 ```
 sudo apt-get update
 sudo apt-get upgrade
@@ -16,10 +18,13 @@ su -s ${USER}
 ```
 
 ### Setting up the jetson nanos
-Follow this [link](https://gilberttanner.com/blog/jetson-nano-getting-started/) to setup up all jetson nanos 
+
+Follow this [link](https://gilberttanner.com/blog/jetson-nano-getting-started/) to setup up all jetson nanos
 
 ### Setting up k3s in master node
+
 Only run this on one of the jetson nano nodes
+
 ```
 mkdir  -p ~/.kube
 curl -sfL https://get.k3s.io | \
@@ -31,6 +36,7 @@ curl -sfL https://get.k3s.io | \
 ```
 
 ### Setting up k3s in worker node
+
 When setting up the worker nodes, run the following:
 
 ```
@@ -43,18 +49,26 @@ curl -sfL https://get.k3s.io | \
 The ip of master can be obtained by typing ipconfig on the master node. The k3s token can be obtained via `cat /var/lib/rancher/k3s/server/node-token`
 
 ### Setting up docker in worker node
+
 ```
 sudo groupadd docker
 sudo usermod -aG docker ${USER}
 sudo chmod 666 /var/run/docker.sock
 ```
+
 ### Quick start
+
 Run `make dev` on master node to spin up all the daemon sets
 
-
 ### Testing local setup
+
 Run `make simple` after running the k3s cluster
 Run `make test` after running the k3s cluster
 
 ### Access to GPU from k3s node
+
 Run `kubectl apply -k tests/k3s` to check the nvidia output
+
+### Viewing metrics
+
+Go to [metrics server](http://localhost:8002/metrics)
