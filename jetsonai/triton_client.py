@@ -1,12 +1,11 @@
 import tritonclient.http as httpclient
 import tritonclient.grpc as grpcclient
 import numpy as np
-from typing import Tuple, Union
+from typing import Tuple, Union, List
 from jetsonai.triton.model.model import ModelConfig, ModelMetadata, ModelResponse
 from jetsonai.triton.model.enums import ClientType, get_client_module
 from PIL import Image
 from jetsonai.preprocessor import preprocess
-
 
 outputResponseType = Union[httpclient.InferResult, grpcclient.InferResult]
 
@@ -85,9 +84,10 @@ class TritonClientApi:
         supports_batching: bool = False,
     ):
         output_array = results.as_numpy(output_name)
+        responses: List[ModelResponse] = []
         for results in output_array:
             if not supports_batching:
                 results = [results]
             for result in results:
-                response: ModelResponse = ModelResponse(raw_string=result)
-                print(response)
+                responses.append(ModelResponse(raw_string=result))
+        return responses
