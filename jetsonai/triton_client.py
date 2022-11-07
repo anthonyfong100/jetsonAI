@@ -51,7 +51,7 @@ class TritonClientApi:
 
         return model_config, model_metadata
 
-    def infer(self, image: Image):
+    def infer(self, image: Image) -> List[ModelResponse]:
         metadata_data_type = self.model_metadata.inputs[0].datatype
         output_name = self.model_metadata.outputs[0].name
         img_preprocessed = preprocess(
@@ -82,7 +82,7 @@ class TritonClientApi:
         results: outputResponseType,
         output_name: str,
         supports_batching: bool = False,
-    ):
+    ) -> List[ModelResponse]:
         output_array = results.as_numpy(output_name)
         responses: List[ModelResponse] = []
         for results in output_array:

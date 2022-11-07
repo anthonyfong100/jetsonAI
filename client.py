@@ -1,8 +1,9 @@
+import cv2
 import argparse
 import tritonclient.http as httpclient
-
+from PIL import Image
 from jetsonai.triton_client import TritonClientApi
-from jetsonai.loaders import LocalFileLoader
+from jetsonai.loaders import LocalFileLoader, WebCamLoader
 from jetsonai.triton.model.enums import ClientType
 
 
@@ -111,7 +112,12 @@ if __name__ == "__main__":
         FLAGS.scaling,
         FLAGS.classes,
     )
-    image_provider = LocalFileLoader(FLAGS.image_filename)
-    for image in image_provider.iter():
-        resp = triton_api.infer(image)
-        print(resp)
+    with WebCamLoader() as vid_stream:
+        for _, frame in vid_stream.iter():
+            resp = triton_api.infer(Image.fromarray(frame))
+            cv2.imshow(vid_stream.window_name, frame)
+            print(resp[0].class_name)
+    # image_provider = LocalFileLoader(FLAGS.image_filename)
+    # for image in image_provider.iter():
+    #     resp = triton_api.infer(image)
+    #     print(resp)
