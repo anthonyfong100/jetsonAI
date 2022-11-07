@@ -2,7 +2,7 @@ import tritonclient.http as httpclient
 import tritonclient.grpc as grpcclient
 import numpy as np
 from typing import Tuple, Union
-from jetsonai.triton.model.model import ModelConfig, ModelMetadata
+from jetsonai.triton.model.model import ModelConfig, ModelMetadata, ModelResponse
 from jetsonai.triton.model.enums import ClientType, get_client_module
 from PIL import Image
 from jetsonai.preprocessor import preprocess
@@ -69,7 +69,6 @@ class TritonClientApi:
                 metadata_data_type,
             )
         ]
-        print(f"triton input is {triton_input}")
         triton_input[0].set_data_from_numpy(img_preprocessed)
         outputs = [
             client_module.InferRequestedOutput(output_name, class_count=self.classes)
@@ -90,9 +89,5 @@ class TritonClientApi:
             if not supports_batching:
                 results = [results]
             for result in results:
-                if output_array.dtype.type == np.object_:
-                    print(result)
-                    cls = "".join(chr(x) for x in result).split(":")
-                else:
-                    cls = result.split(":")
-                print("    {} ({}) = {}".format(cls[0], cls[1], cls[2]))
+                response: ModelResponse = ModelResponse(raw_string=result)
+                print(response)

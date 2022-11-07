@@ -2,6 +2,7 @@ from typing import List, Dict
 from pydantic import BaseModel, validator, root_validator
 from jetsonai.triton.model.block import ModelMetaDataBlock, ModelConfigBlock
 import tritonclient.grpc.model_config_pb2 as model_config
+from typing import Optional
 
 FP32_CONSTANT = "FP32"
 
@@ -129,3 +130,20 @@ class ModelMetadata(BaseModel):
             len(input_metadata.shape) == expected_input_dims
         ), f"expecting input to have {expected_input_dims} dimensions, input has { len(input_metadata.shape)}"
         return inputs
+
+
+class ModelResponse(BaseModel):
+    raw_string: str
+    confidence: Optional[float] = None
+    class_id: Optional[int] = None
+    class_name: Optional[str] = None
+
+    @root_validator(pre=True)
+    def load_from_string(cls, values: dict):
+        confidence, class_id, class_name = "".join(
+            chr(x) for x in values["raw_string"]
+        ).split(":")
+        values["confidence"] = float(confidence)
+        values["class_id"] = int(class_id)
+        values["class_name"] = class_name
+        return values
