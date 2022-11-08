@@ -2,9 +2,17 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: triton
+  annotations:
+      prometheus.io/scrape: 'true'
+      prometheus.io/port:   '8002'
+
 spec:
   selector:
   template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8002"
     spec:
       containers:
         - name: triton-server

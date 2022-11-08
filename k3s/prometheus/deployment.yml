@@ -11,7 +11,11 @@ spec:
     metadata:
       labels:
         app: prometheus-server
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
     spec:
+      nodeName: kuoxin-desktop # TODO: Remove this hardcoding
       containers:
         - name: prometheus
           image: prom/prometheus
