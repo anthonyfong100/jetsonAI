@@ -37,14 +37,3 @@ data:
         - source_labels: [__meta_kubernetes_pod_name]
           action: replace
           target_label: kubernetes_pod_name
-
-
-      - job_name: 'triton'
-        
-        kubernetes_sd_configs:
-        - role: pod
-
-        relabel_configs:
-        - source_labels: [__meta_kubernetes_pod_label_app]
-          regex: triton
-          action: keep   
