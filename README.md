@@ -17,7 +17,9 @@ sudo usermod -aG docker ${USER}
 su -s ${USER}
 ```
 
-### Setting up the jetson nanos
+\_
+
+### Setting up the jetson nanos\_
 
 Follow this [link](https://gilberttanner.com/blog/jetson-nano-getting-started/) to setup up all jetson nanos
 

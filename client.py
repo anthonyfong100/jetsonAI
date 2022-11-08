@@ -1,9 +1,12 @@
+import cv2
 import argparse
 import tritonclient.http as httpclient
-
+from PIL import Image
 from jetsonai.triton_client import TritonClientApi
-from jetsonai.loaders import LocalFileLoader
+from jetsonai.loaders import LocalFileLoader, WebCamLoader
 from jetsonai.triton.model.enums import ClientType
+
+
 def setup_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -94,16 +97,27 @@ def setup_parser() -> argparse.ArgumentParser:
     return parser
 
 
-
 if __name__ == "__main__":
     parser = setup_parser()
     FLAGS = parser.parse_args()
     concurrency = 20 if FLAGS.async_set else 1
     triton_client = httpclient.InferenceServerClient(
-                url=FLAGS.url, verbose=FLAGS.verbose, concurrency=concurrency
-            )
-    triton_api = TritonClientApi(triton_client,ClientType.http,FLAGS.model_name, FLAGS.model_version, FLAGS.scaling)
-    image_provider = LocalFileLoader(FLAGS.image_filename)
-    for image in image_provider.iter():
-        resp = triton_api.infer(image)
-        print(resp)
+        url=FLAGS.url, verbose=FLAGS.verbose, concurrency=concurrency
+    )
+    triton_api = TritonClientApi(
+        triton_client,
+        ClientType.http,
+        FLAGS.model_name,
+        FLAGS.model_version,
+        FLAGS.scaling,
+        FLAGS.classes,
+    )
+    with WebCamLoader() as vid_stream:
+        for _, frame in vid_stream.iter():
+            resp = triton_api.infer(Image.fromarray(frame))
+            cv2.imshow(vid_stream.window_name, frame)
+            print(resp[0].class_name)
+    # image_provider = LocalFileLoader(FLAGS.image_filename)
+    # for image in image_provider.iter():
+    #     resp = triton_api.infer(image)
+    #     print(resp)
