@@ -33,8 +33,8 @@ test:
 
 .PHONY: client
 client:
-	# TF_FORCE_GPU_ALLOW_GROWTH=true OPENBLAS_CORETYPE=ARMV8 python3 client.py -u 172.20.238.9:30800 -m densenet_onnx -s INCEPTION -c 3 tests/data/car.jpeg
-	TF_FORCE_GPU_ALLOW_GROWTH=true OPENBLAS_CORETYPE=ARMV8 python3 client.py -u localhost:8000 -m densenet_onnx -s INCEPTION -c 3 tests/data/car.jpeg
+	TF_FORCE_GPU_ALLOW_GROWTH=true OPENBLAS_CORETYPE=ARMV8 python3 client.py -u 172.20.238.9:30800 -m densenet_onnx -s INCEPTION -c 3 tests/data/car.jpeg
+	# TF_FORCE_GPU_ALLOW_GROWTH=true OPENBLAS_CORETYPE=ARMV8 python3 client.py -u localhost:8000 -m densenet_onnx -s INCEPTION -c 3 tests/data/car.jpeg
 
 .PHONY: simple
 simple:
