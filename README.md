@@ -74,3 +74,8 @@ Run `kubectl apply -k tests/k3s` to check the nvidia output
 ### Viewing metrics
 
 Go to [metrics server](http://localhost:8002/metrics)
+
+### Prometheus / Grafana cant connect to other pods
+
+Referenced from https://github.com/k3s-io/k3s/issues/53
+Run `sudo iptables -P FORWARD ACCEPT`
