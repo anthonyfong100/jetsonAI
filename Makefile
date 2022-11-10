@@ -47,4 +47,4 @@ release:
 
 .PHONY: perf-test
 perf-test:
-	locust --config .locust.conf
+	OPENBLAS_CORETYPE=ARMV8 locust --config .locust.conf

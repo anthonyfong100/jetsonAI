@@ -13,7 +13,7 @@ IMAGE_FILENAME = "tests/data/car.jpeg"
 NUM_CLASS_RESULT = 1
 
 
-class TritonTestClientApi(User):
+class TritonTestAsyncClientApi(User):
     def __init__(self, environment) -> None:
         self.environment = environment
         triton_client = httpclient.InferenceServerClient(
@@ -43,7 +43,8 @@ class TritonTestClientApi(User):
                 "exception": None,
             }
             start_perf_counter = time.perf_counter()
-            request_meta["response"] = self.api_client.infer(image)
+            res = self.api_client.async_infer(image).get_result()
+            request_meta["response"] = res
             request_meta["response_time"] = (
                 time.perf_counter() - start_perf_counter
             ) * 1000

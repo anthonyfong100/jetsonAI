@@ -44,8 +44,9 @@ When setting up the worker nodes, run the following:
 ```
 curl -sfL https://get.k3s.io | \
  K3S_TOKEN="token-value" \
- K3S_URL="https://url:6443" \
- INSTALL_K3S_EXEC="--docker"
+ K3S_URL="https://172.20.238.9:6443" \
+ INSTALL_K3S_EXEC="--docker" \
+ sh -
 ```
 
 The ip of master can be obtained by typing ipconfig on the master node. The k3s token can be obtained via `cat /var/lib/rancher/k3s/server/node-token`

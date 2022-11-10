@@ -51,7 +51,7 @@ class TritonClientApi:
 
         return model_config, model_metadata
 
-    def infer(self, image: Image) -> List[ModelResponse]:
+    def __generate_input_output(self, image: Image):
         metadata_data_type = self.model_metadata.inputs[0].datatype
         output_name = self.model_metadata.outputs[0].name
         img_preprocessed = preprocess(
@@ -72,6 +72,17 @@ class TritonClientApi:
         outputs = [
             client_module.InferRequestedOutput(output_name, class_count=self.classes)
         ]
+        return triton_input, outputs, output_name
+
+    def async_infer(self, image: Image):
+        triton_input, outputs, output_name = self.__generate_input_output(image)
+        result_promise = self.triton_client.async_infer(
+            self.model_config.name, triton_input, outputs=outputs
+        )
+        return result_promise
+
+    def infer(self, image: Image) -> List[ModelResponse]:
+        triton_input, outputs, output_name = self.__generate_input_output(image)
         results = self.triton_client.infer(
             self.model_config.name, triton_input, outputs=outputs
         )
