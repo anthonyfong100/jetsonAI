@@ -38,9 +38,13 @@ client:
 
 .PHONY: simple
 simple:
-	# OPENBLAS_CORETYPE=ARMV8 python3 tests/simple_test.py -u 172.20.238.9:30800
-	OPENBLAS_CORETYPE=ARMV8 python3 tests/simple_test.py -u localhost:8000
+	OPENBLAS_CORETYPE=ARMV8 python3 tests/simple_test.py -u 172.20.238.9:30800
+	# OPENBLAS_CORETYPE=ARMV8 python3 tests/simple_test.py -u localhost:8000
 	
 .PHONY: release
 release:
 	docker build -t anthonyfong/jetson-triton . && docker push anthonyfong/jetson-triton
+
+.PHONY: perf-test
+perf-test:
+	OPENBLAS_CORETYPE=ARMV8 locust --config .locust.conf
