@@ -16,7 +16,7 @@ class ModelConfigBlock(BaseModel):
     data_type: str
     format: Optional[str]
     dims: List[int]
-    reshape: Reshape
+    reshape: Optional[Reshape]
     is_shape_tensor: bool
     allow_ragged_batch: Optional[bool]
     label_filename: Optional[str]

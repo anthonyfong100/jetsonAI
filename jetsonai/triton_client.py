@@ -5,7 +5,7 @@ from typing import Tuple, Union, List
 from jetsonai.triton.model.model import ModelConfig, ModelMetadata, ModelResponse
 from jetsonai.triton.model.enums import ClientType, get_client_module
 from PIL import Image
-from jetsonai.preprocessor import preprocess
+from jetsonai.preprocessor import get_preprocesser_func
 
 outputResponseType = Union[httpclient.InferResult, grpcclient.InferResult]
 
@@ -27,6 +27,8 @@ class TritonClientApi:
         )
         self.normalize_schema = normalize_schema
         self.classes = classes
+        print(f"self number of classes {classes}")
+        self.preprocessor_func = get_preprocesser_func(model_name)
 
     def __get_model_metadata(
         self, model_name: str, model_version: str
@@ -54,7 +56,7 @@ class TritonClientApi:
     def __generate_input_output(self, image: Image):
         metadata_data_type = self.model_metadata.inputs[0].datatype
         output_name = self.model_metadata.outputs[0].name
-        img_preprocessed = preprocess(
+        img_preprocessed = self.preprocessor_func(
             image,
             self.model_config.input_config,
             self.normalize_schema,
@@ -69,9 +71,7 @@ class TritonClientApi:
             )
         ]
         triton_input[0].set_data_from_numpy(img_preprocessed)
-        outputs = [
-            client_module.InferRequestedOutput(output_name, class_count=self.classes)
-        ]
+        outputs = [client_module.InferRequestedOutput(output_name)]
         return triton_input, outputs, output_name
 
     def async_infer(self, image: Image):
