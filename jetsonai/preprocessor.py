@@ -13,10 +13,6 @@ import tritonclient.grpc.model_config_pb2 as mc
 from PIL import Image
 
 
-def __set_image_color(img: Image, channels: int) -> Image:
-    return img.convert("L") if channels == 1 else img.convert("RGB")
-
-
 def __resize_image(img, width: int, height: int, data_type):
     resized_img = img.resize((width, height), Image.BILINEAR)
     resized = np.array(resized_img)
@@ -46,9 +42,12 @@ def __reorder_channels(img, format: int):
 
 
 def preprocess_densenet(
-    img, input_config: InputConfig, normalize_schema: str, metadata_datatype: str
+    img: np.array,
+    input_config: InputConfig,
+    normalize_schema: str,
+    metadata_datatype: str,
 ):
-    image = __set_image_color(img, input_config.channels)
+    image = Image.fromarray(img)
     image = __resize_image(
         image, input_config.width, input_config.height, metadata_datatype
     )
