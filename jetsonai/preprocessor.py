@@ -244,7 +244,6 @@ def non_max_suppression(
 
 def __postprocess_yolov5(outputs: np.array, top_k: int) -> ObjectDetectionResult:
     def __parse_nms_tensor(predictions: np.array) -> ObjectDetectionResult:
-        print(predictions.shape)
         x1, y1, x2, y2, confidence, class_id = predictions
         class_id = int(class_id)
         class_name = label_manager.yolov5_map[class_id]

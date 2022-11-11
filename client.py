@@ -1,10 +1,11 @@
 import cv2
 import argparse
 import tritonclient.http as httpclient
-from PIL import Image
 from jetsonai.triton_client import TritonClientApi
 from jetsonai.loaders import LocalFileLoader, WebCamLoader
 from jetsonai.triton.model.enums import ClientType
+from jetsonai.annotator import draw_box_labels
+from jetsonai.triton.model.constants import YOLOV5_INPUT_HEIGHT, YOLOV5_INPUT_WIDTH
 
 
 def setup_parser() -> argparse.ArgumentParser:
@@ -97,6 +98,14 @@ def setup_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def visualize_yolov5(triton_client: TritonClientApi, image: cv2.Mat):
+    resp = triton_client.infer(image)
+    img_with_boxes = draw_box_labels(
+        image, resp, (YOLOV5_INPUT_HEIGHT, YOLOV5_INPUT_WIDTH)
+    )
+    return img_with_boxes
+
+
 if __name__ == "__main__":
     parser = setup_parser()
     FLAGS = parser.parse_args()
@@ -112,12 +121,14 @@ if __name__ == "__main__":
         FLAGS.scaling,
         FLAGS.classes,
     )
-    with WebCamLoader() as vid_stream:
-        for _, frame in vid_stream.iter():
-            resp = triton_api.infer(Image.fromarray(frame))
-            cv2.imshow(vid_stream.window_name, frame)
-            print(resp[0].class_name)
-    # image_provider = LocalFileLoader(FLAGS.image_filename)
-    # for image in image_provider.iter():
-    #     resp = triton_api.infer(image)
-    #     print(resp)
+    # with WebCamLoader() as vid_stream:
+    #     for _, frame in vid_stream.iter():
+    #         resp = triton_api.infer(Image.fromarray(frame))
+    #         cv2.imshow(vid_stream.window_name, frame)
+    #         print(resp[0].class_name)
+    image_provider = LocalFileLoader(FLAGS.image_filename)
+    image: cv2.Mat
+    for image in image_provider.iter():
+        img_annotated = visualize_yolov5(triton_api, image)
+        cv2.imshow("yolov5", img_annotated)
+        cv2.waitKey(0)
