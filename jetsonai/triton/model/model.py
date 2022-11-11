@@ -20,14 +20,14 @@ class InputConfig(ModelConfigBlock):
         FORMAT_ENUM_TO_INT = dict(model_config.ModelInput.Format.items())
         values["format"] = FORMAT_ENUM_TO_INT[values["format"]]
 
-        assert (
-            values["format"] == model_config.ModelInput.FORMAT_NCHW
-            or values["format"] == model_config.ModelInput.FORMAT_NHWC
-        ), (
-            f"Unexpected input format received {model_config.ModelInput.Format.Name(values['format'])} "
-            f"expecting { model_config.ModelInput.Format.Name(model_config.ModelInput.FORMAT_NCHW)} "
-            f"or {model_config.ModelInput.Format.Name(model_config.ModelInput.FORMAT_NHWC)}"
-        )
+        # assert (
+        #     values["format"] == model_config.ModelInput.FORMAT_NCHW
+        #     or values["format"] == model_config.ModelInput.FORMAT_NHWC
+        # ), (
+        #     f"Unexpected input format received {model_config.ModelInput.Format.Name(values['format'])} "
+        #     f"expecting { model_config.ModelInput.Format.Name(model_config.ModelInput.FORMAT_NCHW)} "
+        #     f"or {model_config.ModelInput.Format.Name(model_config.ModelInput.FORMAT_NHWC)}"
+        # )
 
         # generate height width channels
         input_metadata_shape, has_input_batch_dim = (
@@ -58,9 +58,9 @@ class ModelConfig(BaseModel):
     input_metadata_shape: List[int]
     input_config: InputConfig = None  # computed in validator
 
-    @root_validator
+    @root_validator(pre=True)
     def generate_input_config(cls, values):
-        input_config: ModelConfigBlock = values["input"][0]
+        input_config: ModelConfigBlock = ModelConfigBlock.parse_obj(values["input"][0])
         input_config_dict: dict = input_config.dict()
         values["input_config"] = InputConfig(
             input_metadata_shape=values["input_metadata_shape"],
@@ -88,7 +88,7 @@ class ModelMetadata(BaseModel):
     @validator("inputs", "outputs")
     def check_single_input(cls, field):
         assert (
-            len(field) == 1
+            len(field) > 0
         ), f"Inputs and outputs should have a length of one, received {len(field)}"
         return field
 
@@ -100,36 +100,15 @@ class ModelMetadata(BaseModel):
             ), f"output should have datatype FP32,{output.name} has received {output.datatype}"
         return outputs
 
-    # Output is expected to be a vector. But allow any number of
-    # dimensions as long as all but 1 is size 1 (e.g. { 10 }, { 1, 10
-    # }, { 10, 1, 1 } are all ok). Ignore the batch dimension if there
-    # is one.
-    @validator("outputs")
-    def check_output_dims(cls, outputs: List[ModelMetaDataBlock], values):
-        output_metadata = outputs[0]
-        start_dim = (
-            1 if values["max_batch_size"] > 0 else 0
-        )  # skip the batch size checks
-        non_one_counts = 0
-        for dim in output_metadata.shape[start_dim:]:
-            if dim > 1:
-                non_one_counts += 1
-
-        assert (
-            non_one_counts <= 1
-        ), "Expecting model output to be a vector with only one channel wiht non-one value"
-
-        return outputs
-
-    @validator("inputs")
-    def check_input_metadata_dims(cls, inputs, values):
-        input_metadata = inputs[0]
-        has_input_batch_dims = values["max_batch_size"] > 0
-        expected_input_dims = 4 if has_input_batch_dims else 3
-        assert (
-            len(input_metadata.shape) == expected_input_dims
-        ), f"expecting input to have {expected_input_dims} dimensions, input has { len(input_metadata.shape)}"
-        return inputs
+    # @validator("inputs")
+    # def check_input_metadata_dims(cls, inputs, values):
+    #     input_metadata = inputs[0]
+    #     has_input_batch_dims = values["max_batch_size"] > 0
+    #     expected_input_dims = 4 if has_input_batch_dims else 3
+    #     assert (
+    #         len(input_metadata.shape) == expected_input_dims
+    #     ), f"expecting input to have {expected_input_dims} dimensions, input has { len(input_metadata.shape)}"
+    #     return inputs
 
 
 class ModelResponse(BaseModel):

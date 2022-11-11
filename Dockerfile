@@ -1,22 +1,22 @@
 FROM nvcr.io/nvidia/l4t-base:r32.6.1
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        software-properties-common \
-        autoconf \
-        automake \
-        build-essential \
-        cmake \
-        git \
-        libb64-dev \
-        libre2-dev \
-        libssl-dev \
-        libtool \
-        libboost-dev \
-        libcurl4-openssl-dev \
-        libopenblas-dev \
-        rapidjson-dev \
-        patchelf \
-        zlib1g-dev && \
+    software-properties-common \
+    autoconf \
+    automake \
+    build-essential \
+    cmake \
+    git \
+    libb64-dev \
+    libre2-dev \
+    libssl-dev \
+    libtool \
+    libboost-dev \
+    libcurl4-openssl-dev \
+    libopenblas-dev \
+    rapidjson-dev \
+    patchelf \
+    zlib1g-dev && \
     apt-get autoclean && \
     apt-get autoremove
 RUN mkdir -p /opt/triton && \
@@ -30,9 +30,8 @@ ENV LD_LIBRARY_PATH="/opt/triton/lib:$LD_LIBRARY_PATH"
 RUN mkdir -p /opt/triton/models
 WORKDIR /tmp/models
 COPY scripts scripts
-RUN scripts/download_densenet.sh
-RUN scripts/download_simple.sh
+COPY models models
 RUN mv models /opt/triton
 
 WORKDIR /opt/triton
-ENTRYPOINT ["tritonserver", "--backend-directory=/opt/triton/backends"]
+ENTRYPOINT ["tritonserver", "--backend-directory=/opt/triton/backends", "--strict-model-config=false"]
