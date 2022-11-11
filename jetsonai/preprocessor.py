@@ -3,6 +3,7 @@ import torch
 import time
 import torchvision
 import cv2
+from jetsonai.triton.model import ObjectDetectionResult
 from typing import List, Dict
 from jetsonai.utils import xywh2xyxy, letterbox
 from jetsonai.triton.model.model import InputConfig
@@ -76,7 +77,9 @@ def __top_k_ix(arr: np.array, top_k: int):
     return np.argsort(arr)[-top_k:][::-1]
 
 
-def __postprocess_densenet(results: np.array, top_k: int = 1) -> List[ClassificationResult]:
+def __postprocess_densenet(
+    results: np.array, top_k: int = 1
+) -> List[ClassificationResult]:
     top_class_index = __top_k_ix(results, top_k)
     processed_results: List[ClassificationResult] = []
     densenet_classes_map = label_manager.densenet_onnx_map
@@ -239,10 +242,28 @@ def non_max_suppression(
     return output
 
 
-def __postprocess_yolov5(outputs: np.array, top_k: int):
+def __postprocess_yolov5(outputs: np.array, top_k: int) -> ObjectDetectionResult:
+    def __parse_nms_tensor(predictions: np.array) -> ObjectDetectionResult:
+        print(predictions.shape)
+        x1, y1, x2, y2, confidence, class_id = predictions
+        class_id = int(class_id)
+        class_name = label_manager.yolov5_map[class_id]
+        return ObjectDetectionResult(
+            x1=x1,
+            y1=y1,
+            x2=x2,
+            y2=y2,
+            confidence=confidence,
+            class_id=class_id,
+            class_name=class_name,
+        )
+
     outputs = torch.tensor(outputs)
-    pred = non_max_suppression(outputs)
-    return pred
+    preds = non_max_suppression(outputs)
+    assert (
+        len(preds) == 1
+    ), "__postprocess_yolov5 should only be called on result from a single image"
+    return [__parse_nms_tensor(pred) for pred in preds[0]]
 
 
 def get_preprocesser_func(model_name: str):
