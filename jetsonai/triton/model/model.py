@@ -100,16 +100,6 @@ class ModelMetadata(BaseModel):
             ), f"output should have datatype FP32,{output.name} has received {output.datatype}"
         return outputs
 
-    # @validator("inputs")
-    # def check_input_metadata_dims(cls, inputs, values):
-    #     input_metadata = inputs[0]
-    #     has_input_batch_dims = values["max_batch_size"] > 0
-    #     expected_input_dims = 4 if has_input_batch_dims else 3
-    #     assert (
-    #         len(input_metadata.shape) == expected_input_dims
-    #     ), f"expecting input to have {expected_input_dims} dimensions, input has { len(input_metadata.shape)}"
-    #     return inputs
-
 
 class ModelResponse(BaseModel):
     confidence: float
