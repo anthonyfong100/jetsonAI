@@ -1,6 +1,6 @@
 import os
 from typing import List
-from PIL import Image
+import cv2
 
 
 class LocalFileLoader:
@@ -18,6 +18,6 @@ class LocalFileLoader:
             )
         return [file_path]
 
-    def iter(self):
+    def iter(self) -> cv2.Mat:
         for file_path in self.file_paths:
-            yield Image.open(file_path)
+            yield cv2.imread(file_path)
