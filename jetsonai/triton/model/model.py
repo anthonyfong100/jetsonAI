@@ -101,7 +101,7 @@ class ModelMetadata(BaseModel):
         return outputs
 
 
-class ModelResponse(BaseModel):
+class ClassificationResult(BaseModel):
     confidence: float
     class_id: int
     class_name: str

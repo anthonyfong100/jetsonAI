@@ -7,7 +7,7 @@ from typing import List, Dict
 from jetsonai.utils import xywh2xyxy, letterbox
 from jetsonai.triton.model.model import InputConfig
 from tritonclient.utils import triton_to_np_dtype
-from jetsonai.triton.model import ModelResponse
+from jetsonai.triton.model import ClassificationResult
 from jetsonai.loaders.labels import label_manager
 import tritonclient.grpc.model_config_pb2 as mc
 from PIL import Image
@@ -61,10 +61,8 @@ def preprocess_yolov5(
     image: cv2.Mat, input_config: InputConfig, normalize_schema, metadata_type
 ):
     im = letterbox(image, input_config.width, stride=32, auto=False)[0]  # padded resize
-    print(f"post letterbox shape{im.shape}")
     im = im.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
     im = np.ascontiguousarray(im)  # contiguous
-    print(f"im shape{im.shape}")
     # im = torch.from_numpy(im)
     # im = im.float()  # uint8 to fp16/32
     im = im / 255.0  # 0 - 255 to 0.0 - 1.0
@@ -78,13 +76,13 @@ def __top_k_ix(arr: np.array, top_k: int):
     return np.argsort(arr)[-top_k:][::-1]
 
 
-def __postprocess_densenet(results: np.array, top_k: int = 1) -> List[ModelResponse]:
+def __postprocess_densenet(results: np.array, top_k: int = 1) -> List[ClassificationResult]:
     top_class_index = __top_k_ix(results, top_k)
-    processed_results: List[ModelResponse] = []
+    processed_results: List[ClassificationResult] = []
     densenet_classes_map = label_manager.densenet_onnx_map
     for index in top_class_index:
         processed_results.append(
-            ModelResponse(
+            ClassificationResult(
                 class_id=index,
                 confidence=results[index],
                 class_name=densenet_classes_map[index],
@@ -129,7 +127,6 @@ def non_max_suppression(
     Returns:
          list of detections, on (n,6) tensor per image [xyxy, conf, cls]
     """
-    print(prediction.shape)
 
     if isinstance(
         prediction, (list, tuple)
