@@ -5,7 +5,7 @@ from typing import Tuple, Union, List
 from jetsonai.triton.model.model import ModelConfig, ModelMetadata, ModelResponse
 from jetsonai.triton.model.enums import ClientType, get_client_module
 from PIL import Image
-from jetsonai.preprocessor import get_preprocesser_func
+from jetsonai.preprocessor import get_preprocesser_func, get_postprocess_func
 
 outputResponseType = Union[httpclient.InferResult, grpcclient.InferResult]
 
@@ -27,8 +27,9 @@ class TritonClientApi:
         )
         self.normalize_schema = normalize_schema
         self.classes = classes
-        print(f"self number of classes {classes}")
-        self.preprocessor_func = get_preprocesser_func(model_name)
+        self.preprocessor_func, self.postprocess_func = get_preprocesser_func(
+            model_name
+        ), get_postprocess_func(model_name)
 
     def __get_model_metadata(
         self, model_name: str, model_version: str
@@ -95,10 +96,4 @@ class TritonClientApi:
         supports_batching: bool = False,
     ) -> List[ModelResponse]:
         output_array = results.as_numpy(output_name)
-        responses: List[ModelResponse] = []
-        for results in output_array:
-            if not supports_batching:
-                results = [results]
-            for result in results:
-                responses.append(ModelResponse(raw_string=result))
-        return responses
+        return self.postprocess_func(output_array, self.classes)
