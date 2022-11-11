@@ -2,12 +2,18 @@ import tritonclient.http as httpclient
 import tritonclient.grpc as grpcclient
 import numpy as np
 from typing import Tuple, Union, List
-from jetsonai.triton.model.model import ModelConfig, ModelMetadata, ModelResponse
+from jetsonai.triton.model.model import (
+    ModelConfig,
+    ModelMetadata,
+    ClassificationResult,
+    ObjectDetectionResult,
+)
 from jetsonai.triton.model.enums import ClientType, get_client_module
 from PIL import Image
-from jetsonai.preprocessor import get_preprocesser_func
+from jetsonai.preprocessor import get_preprocesser_func, get_postprocess_func
 
 outputResponseType = Union[httpclient.InferResult, grpcclient.InferResult]
+outputResultType = Union[ClassificationResult, ObjectDetectionResult]
 
 
 class TritonClientApi:
@@ -27,8 +33,9 @@ class TritonClientApi:
         )
         self.normalize_schema = normalize_schema
         self.classes = classes
-        print(f"self number of classes {classes}")
-        self.preprocessor_func = get_preprocesser_func(model_name)
+        self.preprocessor_func, self.postprocess_func = get_preprocesser_func(
+            model_name
+        ), get_postprocess_func(model_name)
 
     def __get_model_metadata(
         self, model_name: str, model_version: str
@@ -81,7 +88,7 @@ class TritonClientApi:
         )
         return result_promise
 
-    def infer(self, image: Image) -> List[ModelResponse]:
+    def infer(self, image: Image) -> List[outputResultType]:
         triton_input, outputs, output_name = self.__generate_input_output(image)
         results = self.triton_client.infer(
             self.model_config.name, triton_input, outputs=outputs
@@ -93,12 +100,6 @@ class TritonClientApi:
         results: outputResponseType,
         output_name: str,
         supports_batching: bool = False,
-    ) -> List[ModelResponse]:
+    ) -> List[outputResultType]:
         output_array = results.as_numpy(output_name)
-        responses: List[ModelResponse] = []
-        for results in output_array:
-            if not supports_batching:
-                results = [results]
-            for result in results:
-                responses.append(ModelResponse(raw_string=result))
-        return responses
+        return self.postprocess_func(output_array, self.classes)

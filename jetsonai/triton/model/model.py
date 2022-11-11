@@ -100,29 +100,18 @@ class ModelMetadata(BaseModel):
             ), f"output should have datatype FP32,{output.name} has received {output.datatype}"
         return outputs
 
-    # @validator("inputs")
-    # def check_input_metadata_dims(cls, inputs, values):
-    #     input_metadata = inputs[0]
-    #     has_input_batch_dims = values["max_batch_size"] > 0
-    #     expected_input_dims = 4 if has_input_batch_dims else 3
-    #     assert (
-    #         len(input_metadata.shape) == expected_input_dims
-    #     ), f"expecting input to have {expected_input_dims} dimensions, input has { len(input_metadata.shape)}"
-    #     return inputs
+
+class ClassificationResult(BaseModel):
+    confidence: float
+    class_id: int
+    class_name: str
 
 
-class ModelResponse(BaseModel):
-    raw_string: str
-    confidence: Optional[float] = None
-    class_id: Optional[int] = None
-    class_name: Optional[str] = None
-
-    @root_validator(pre=True)
-    def load_from_string(cls, values: dict):
-        confidence, class_id, class_name = "".join(
-            chr(x) for x in values["raw_string"]
-        ).split(":")
-        values["confidence"] = float(confidence)
-        values["class_id"] = int(class_id)
-        values["class_name"] = class_name
-        return values
+class ObjectDetectionResult(BaseModel):
+    x1: float
+    y1: float
+    x2: float
+    y2: float
+    confidence: float
+    class_id: int
+    class_name: str
