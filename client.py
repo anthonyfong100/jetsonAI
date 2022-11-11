@@ -121,14 +121,7 @@ if __name__ == "__main__":
         FLAGS.scaling,
         FLAGS.classes,
     )
-    # with WebCamLoader() as vid_stream:
-    #     for _, frame in vid_stream.iter():
-    #         resp = triton_api.infer(Image.fromarray(frame))
-    #         cv2.imshow(vid_stream.window_name, frame)
-    #         print(resp[0].class_name)
-    image_provider = LocalFileLoader(FLAGS.image_filename)
-    image: cv2.Mat
-    for image in image_provider.iter():
-        img_annotated = visualize_yolov5(triton_api, image)
-        cv2.imshow("yolov5", img_annotated)
-        cv2.waitKey(0)
+    with WebCamLoader() as vid_stream:
+        for _, frame in vid_stream.iter():
+            img_annotated = visualize_yolov5(triton_api, frame)
+            cv2.imshow(vid_stream.window_name, img_annotated)
