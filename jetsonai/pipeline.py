@@ -4,7 +4,6 @@ Orchestrator which stores the async queues and calls the displays method
 import cv2
 import asyncio
 from jetsonai.triton_client import TritonClientApi
-from asyncio import Queue
 from jetsonai.constants import (
     INFERENCE_Q_MAX_SIZE,
     DISPLAY_Q_MAX_SIZE,
@@ -24,8 +23,8 @@ class PipelineOrchestrator:
     ) -> None:
         self.triton_clients = triton_clients
         self.loader = loader
-        self.inference_queue = Queue(maxsize=INFERENCE_Q_MAX_SIZE)
-        self.display_queue = Queue(maxsize=DISPLAY_Q_MAX_SIZE)
+        self.inference_queue = asyncio.Queue(maxsize=INFERENCE_Q_MAX_SIZE)
+        self.display_queue = asyncio.Queue(maxsize=DISPLAY_Q_MAX_SIZE)
 
     async def __insert_to_q(self, frame):
         print(f"inserting to q {self.inference_queue.qsize()}")
@@ -33,6 +32,7 @@ class PipelineOrchestrator:
 
     async def __infer(self, triton_client: TritonClientApi, agent_id: int):
         while True:
+
             frame = await self.inference_queue.get()
             results = await triton_client.async_infer(frame)
             print(f"agent {agent_id} returned with {results}")
@@ -40,13 +40,14 @@ class PipelineOrchestrator:
                 frame, results, (YOLOV5_INPUT_HEIGHT, YOLOV5_INPUT_WIDTH)
             )
             await self.display_queue.put(img_with_boxes)
+            self.inference_queue.task_done()
 
     async def __display(self):
         while True:
             annotated_img = await self.display_queue.get()
-            print(f"receiving annotated_img")
             cv2.imshow(self.loader.window_name, annotated_img)
             _ = cv2.waitKey(WAIT_DURATION_MS)
+            self.display_queue.task_done()
 
     def run_pipeline(self):
         loop = asyncio.get_event_loop()
