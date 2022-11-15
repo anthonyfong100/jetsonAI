@@ -1,4 +1,7 @@
+import asyncio
+from jetsonai.constants import WAIT_DURATION_MS
 import cv2
+from typing import Callable
 
 WINDOW_NAME = "Jetson Feed"
 
@@ -20,5 +23,15 @@ class WebCamLoader:
     def iter(self):
         while True:
             res, frame = self.cam.read()
-            key = cv2.waitKey(1)
+            _ = cv2.waitKey(WAIT_DURATION_MS)
             yield res, frame
+
+    async def iter_append_q(
+        self, sleep_duration_seconds: float = 0.01, async_callback_func: Callable = None
+    ):
+        while True:
+            res, frame = self.cam.read()
+            if async_callback_func:
+                await async_callback_func(frame)
+                await asyncio.sleep(sleep_duration_seconds)
+                continue

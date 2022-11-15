@@ -5,7 +5,8 @@ from jetsonai.triton_client import TritonClientApi
 from jetsonai.loaders import LocalFileLoader, WebCamLoader
 from jetsonai.triton.model.enums import ClientType
 from jetsonai.annotator import draw_box_labels
-from jetsonai.triton.model.constants import YOLOV5_INPUT_HEIGHT, YOLOV5_INPUT_WIDTH
+from jetsonai.constants import YOLOV5_INPUT_HEIGHT, YOLOV5_INPUT_WIDTH
+from jetsonai.pipeline import PipelineOrchestrator
 
 
 def setup_parser() -> argparse.ArgumentParser:
@@ -107,21 +108,30 @@ def visualize_yolov5(triton_client: TritonClientApi, image: cv2.Mat):
 
 
 if __name__ == "__main__":
+    from gevent import monkey
+
+    monkey.patch_all()
+
     parser = setup_parser()
     FLAGS = parser.parse_args()
-    concurrency = 20 if FLAGS.async_set else 1
-    triton_client = httpclient.InferenceServerClient(
-        url=FLAGS.url, verbose=FLAGS.verbose, concurrency=concurrency
-    )
-    triton_api = TritonClientApi(
-        triton_client,
-        ClientType.http,
-        FLAGS.model_name,
-        FLAGS.model_version,
-        FLAGS.scaling,
-        FLAGS.classes,
-    )
+    # concurrency = 20 if FLAGS.async_set else 1
+    concurrency = 20
+    num_triton_cliens = 30
+    triton_apis = []
+    for _ in range(num_triton_cliens):
+        triton_client = httpclient.InferenceServerClient(
+            url=FLAGS.url, verbose=FLAGS.verbose, concurrency=concurrency
+        )
+        triton_apis.append(
+            TritonClientApi(
+                triton_client,
+                ClientType.http,
+                FLAGS.model_name,
+                FLAGS.model_version,
+                FLAGS.scaling,
+                FLAGS.classes,
+            )
+        )
     with WebCamLoader() as vid_stream:
-        for _, frame in vid_stream.iter():
-            img_annotated = visualize_yolov5(triton_api, frame)
-            cv2.imshow(vid_stream.window_name, img_annotated)
+        pipeline = PipelineOrchestrator(vid_stream, triton_apis)
+        pipeline.run_pipeline()
