@@ -9,7 +9,6 @@ WINDOW_NAME = "Jetson Feed"
 class WebCamLoader:
     def __init__(self,g_streamer: bool = False) -> None:
         if g_streamer:
-            # self.cam = cv2.VideoCapture(gstreamer_pipeline(),cv2.CAP_GSTREAMER)
             self.cam = cv2.VideoCapture(-1)
         else:
             self.cam = cv2.VideoCapture(0)
