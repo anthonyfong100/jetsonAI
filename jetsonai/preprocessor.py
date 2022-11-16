@@ -59,7 +59,7 @@ def preprocess_densenet(
 
 
 def preprocess_yolov5(
-    image: cv2.Mat, input_config: InputConfig, normalize_schema, metadata_type
+    image: "cv2.Mat", input_config: InputConfig, normalize_schema, metadata_type
 ):
     im = letterbox(image, input_config.width, stride=32, auto=False)[0]  # padded resize
     im = im.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB

@@ -1,3 +1,7 @@
+from gevent import monkey
+
+monkey.patch_all()
+
 import cv2
 import argparse
 import tritonclient.http as httpclient
@@ -90,6 +94,14 @@ def setup_parser() -> argparse.ArgumentParser:
         + "the inference service. Default is HTTP.",
     )
     parser.add_argument(
+        "--gstream",
+        action="store_true",
+        required=False,
+        default=False,
+        help="Flag to set if to use g streamer",
+    )
+
+    parser.add_argument(
         "image_filename",
         type=str,
         nargs="?",
@@ -108,15 +120,12 @@ def visualize_yolov5(triton_client: TritonClientApi, image: "cv2.Mat"):
 
 
 if __name__ == "__main__":
-    from gevent import monkey
-
-    monkey.patch_all()
 
     parser = setup_parser()
     FLAGS = parser.parse_args()
     # concurrency = 20 if FLAGS.async_set else 1
     concurrency = 1
-    num_triton_cliens = 30
+    num_triton_cliens = 20
     triton_apis = []
     for _ in range(num_triton_cliens):
         triton_client = httpclient.InferenceServerClient(
@@ -132,6 +141,6 @@ if __name__ == "__main__":
                 FLAGS.classes,
             )
         )
-    with WebCamLoader() as vid_stream:
+    with WebCamLoader(g_streamer=FLAGS.gstream) as vid_stream:
         pipeline = PipelineOrchestrator(vid_stream, triton_apis)
         pipeline.run_pipeline()
