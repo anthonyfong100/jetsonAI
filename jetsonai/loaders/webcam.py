@@ -2,7 +2,6 @@ import asyncio
 from jetsonai.constants import WAIT_DURATION_MS
 import cv2
 from typing import Callable
-from jetsonai.utils import gstreamer_pipeline
 WINDOW_NAME = "Jetson Feed"
 
 
