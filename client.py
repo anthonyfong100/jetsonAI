@@ -124,8 +124,8 @@ if __name__ == "__main__":
     parser = setup_parser()
     FLAGS = parser.parse_args()
     # concurrency = 20 if FLAGS.async_set else 1
-    concurrency = 20
-    num_triton_cliens = 2
+    concurrency = 1
+    num_triton_cliens = 20
     triton_apis = []
     for _ in range(num_triton_cliens):
         triton_client = httpclient.InferenceServerClient(
