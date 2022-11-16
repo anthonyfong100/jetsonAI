@@ -2,13 +2,17 @@ import asyncio
 from jetsonai.constants import WAIT_DURATION_MS
 import cv2
 from typing import Callable
-
+from jetsonai.utils import gstreamer_pipeline
 WINDOW_NAME = "Jetson Feed"
 
 
 class WebCamLoader:
-    def __init__(self) -> None:
-        self.cam = cv2.VideoCapture(0)
+    def __init__(self,g_streamer: bool = False) -> None:
+        if g_streamer:
+            # self.cam = cv2.VideoCapture(gstreamer_pipeline(),cv2.CAP_GSTREAMER)
+            self.cam = cv2.VideoCapture(-1)
+        else:
+            self.cam = cv2.VideoCapture(0)
         self.window_name = WINDOW_NAME
 
     def __enter__(self):

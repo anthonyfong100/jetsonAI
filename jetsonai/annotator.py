@@ -44,7 +44,7 @@ def scale_box(
 
 
 def draw_box_label(
-    image: cv2.Mat,
+    image: "cv2.Mat",
     prediction: ObjectDetectionResult,
     prediction_iamge_shape: Tuple[int, int],
     line_width=2,
@@ -83,7 +83,7 @@ def draw_box_label(
 
 
 def draw_box_labels(
-    image: cv2.Mat,
+    image: "cv2.Mat",
     predictions: List[ObjectDetectionResult],
     line_width=2,
 ) -> np.array:
