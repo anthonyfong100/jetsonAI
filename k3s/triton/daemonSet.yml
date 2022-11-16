@@ -16,6 +16,8 @@ spec:
     spec:
       containers:
         - name: triton-server
+          nodeSelector:
+            kubernetes.io/role: node
           image: anthonyfong/jetson-triton
           imagePullPolicy: Always
           args:

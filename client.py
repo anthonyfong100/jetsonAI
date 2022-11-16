@@ -99,7 +99,7 @@ def setup_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def visualize_yolov5(triton_client: TritonClientApi, image: cv2.Mat):
+def visualize_yolov5(triton_client: TritonClientApi, image: "cv2.Mat"):
     resp = triton_client.infer(image)
     img_with_boxes = draw_box_labels(
         image, resp, (YOLOV5_INPUT_HEIGHT, YOLOV5_INPUT_WIDTH)
