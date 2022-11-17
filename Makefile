@@ -38,7 +38,8 @@ densenet:
 
 .PHONY: yolov5
 yolov5:
-	TF_FORCE_GPU_ALLOW_GROWTH=true OPENBLAS_CORETYPE=ARMV8 python3 client.py -u localhost:8000 -m yolov5 -c 1 tests/data/bus.jpg
+	#TF_FORCE_GPU_ALLOW_GROWTH=true OPENBLAS_CORETYPE=ARMV8 python3 client.py -u localhost:8000 -m yolov5 -c 1 tests/data/bus.jpg
+	TF_FORCE_GPU_ALLOW_GROWTH=true OPENBLAS_CORETYPE=ARMV8 python3 client.py -u localhost:30800 -m yolov5 -c 1 tests/data/bus.jpg --gstream
 
 
 .PHONY: simple

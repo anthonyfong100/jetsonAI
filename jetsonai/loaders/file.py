@@ -18,6 +18,6 @@ class LocalFileLoader:
             )
         return [file_path]
 
-    def iter(self) -> cv2.Mat:
+    def iter(self) -> "cv2.Mat":
         for file_path in self.file_paths:
             yield cv2.imread(file_path)

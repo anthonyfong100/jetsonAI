@@ -6,10 +6,10 @@ from jetsonai.loaders import LocalFileLoader
 import time
 
 HOST = "172.20.238.9:30800"
-MODEL_NAME = "densenet_onnx"
+MODEL_NAME = "yolov5"
 SCALING = "INCEPTION"
 MODEL_VERSION = ""
-IMAGE_FILENAME = "tests/data/car.jpeg"
+IMAGE_FILENAME = "tests/data/car.jpg"
 NUM_CLASS_RESULT = 1
 
 
@@ -17,7 +17,7 @@ class TritonTestClientApi(User):
     def __init__(self, environment) -> None:
         self.environment = environment
         triton_client = httpclient.InferenceServerClient(
-            url=HOST, verbose=False, concurrency=100
+            url=HOST, verbose=False, concurrency=1
         )
         self.api_client = TritonClientApi(
             triton_client,

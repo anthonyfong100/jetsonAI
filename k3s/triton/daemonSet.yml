@@ -14,10 +14,14 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8002"
     spec:
+      nodeSelector:
+        triton_worker: "true"
       containers:
         - name: triton-server
+          nodeSelector:
+            kubernetes.io/role: node
           image: anthonyfong/jetson-triton
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           args:
             [
               "--min-supported-compute-capability=5.3",

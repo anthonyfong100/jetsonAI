@@ -1,5 +1,6 @@
 import tritonclient.http as httpclient
 import tritonclient.grpc as grpcclient
+import asyncio
 import numpy as np
 from typing import Tuple, Union, List
 from jetsonai.triton.model.model import (
@@ -81,12 +82,18 @@ class TritonClientApi:
         outputs = [client_module.InferRequestedOutput(output_name)]
         return triton_input, outputs, output_name
 
-    def async_infer(self, image: Image):
+    def __async_infer_promise(self, image: Image) -> httpclient.InferAsyncRequest:
         triton_input, outputs, output_name = self.__generate_input_output(image)
         result_promise = self.triton_client.async_infer(
             self.model_config.name, triton_input, outputs=outputs
         )
-        return result_promise
+        return result_promise, output_name
+
+    async def async_infer(self, image: Image):
+        result_promise, output_name = self.__async_infer_promise(image)
+        event_loop = asyncio._get_running_loop()
+        res = await event_loop.run_in_executor(None, result_promise.get_result)
+        return self.__parse_inference(res, output_name)
 
     def infer(self, image: Image) -> List[outputResultType]:
         triton_input, outputs, output_name = self.__generate_input_output(image)
